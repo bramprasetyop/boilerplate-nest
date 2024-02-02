@@ -1,16 +1,16 @@
 import {
   Body,
-  Controller,
+  Controller, // UseGuards,
+  Delete,
   Get,
   InternalServerErrorException,
   Param,
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@src/core/service/guard';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+// import { JwtAuthGuard } from '@src/core/service/guard';
 import { MapResponseSwagger } from '@src/core/utils/global.util';
 
 import {
@@ -29,7 +29,7 @@ export class ClaimsController {
   constructor(private claim: ClaimsService) {}
 
   @MapResponseSwagger(ClaimResponse, { status: 200, isArray: true })
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Query() query: ClaimRequestList
@@ -42,7 +42,7 @@ export class ClaimsController {
   }
 
   @MapResponseSwagger(ClaimResponse, { status: 200, isArray: false })
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findDetail(@Param('id') id: string): Promise<ClaimResponse> {
     try {
@@ -53,7 +53,7 @@ export class ClaimsController {
   }
 
   @MapResponseSwagger(ClaimCreateRequest, { status: 200, isArray: false })
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() body: ClaimCreateRequest): Promise<any> {
     try {
@@ -64,11 +64,29 @@ export class ClaimsController {
   }
 
   @MapResponseSwagger(ClaimUpdateRequest, { status: 200, isArray: false })
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Put()
   async update(@Body() body: ClaimUpdateRequest): Promise<any> {
     try {
       return await this.claim.update(body);
+    } catch (error) {
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @ApiOkResponse({
+    schema: {
+      example: {
+        status_code: 200,
+        status_description: 'Berhasil menghapus prosedur.',
+      },
+    },
+  })
+  // @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@Param('id') id: string): Promise<any> {
+    try {
+      return await this.claim.delete(id);
     } catch (error) {
       throw new InternalServerErrorException(error?.message);
     }

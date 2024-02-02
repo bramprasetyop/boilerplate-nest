@@ -219,4 +219,49 @@ export class ClaimsService {
       throw new Error(error.message);
     }
   }
+
+  async delete(id: string): Promise<any> {
+    try {
+      this.logger.log('starting delete claim', '===running===');
+
+      const response = await this.claimRepository.destroy({
+        where: { id },
+      });
+
+      if (!response) {
+        this.logger.error(
+          '===== Error find claim by id on delete =====',
+          `Error: `,
+          'ID claim tidak ditemukan.'
+        );
+        throw new NotFoundException(
+          'ID claim tidak ditemukan, Mohon periksa kembali.'
+        );
+      }
+
+      const keys = await this.cacheService.store.keys();
+      const keysToDelete = keys.filter((key) => key.startsWith('claimData'));
+
+      for (const keyToDelete of keysToDelete) {
+        await this.cacheService.del(keyToDelete);
+      }
+
+      this.logger.log(
+        'success delete claim',
+        JSON.stringify(response, null, 2)
+      );
+
+      return {
+        status_code: 201,
+        status_description: 'Delete claim success!',
+      };
+    } catch (error) {
+      this.logger.error(
+        'error delete claim',
+        'error ===>',
+        JSON.stringify(error, null, 2)
+      );
+      throw new Error(error.message);
+    }
+  }
 }

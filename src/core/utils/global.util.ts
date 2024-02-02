@@ -1,6 +1,5 @@
 import { Type, applyDecorators } from '@nestjs/common';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import * as crypto from 'crypto';
 
 import { Meta, SwaggerMetaResponse } from '../dto/global.dto';
 
@@ -15,15 +14,6 @@ export function GeneratePagination(
     total: totalData,
     totalPage: Math.ceil(totalData / pageSize),
   };
-}
-
-export function GenerateUUIDv4() {
-  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
-    (
-      +c ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
-    ).toString(16)
-  );
 }
 
 export const MapResponseSwagger = <

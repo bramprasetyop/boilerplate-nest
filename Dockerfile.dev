@@ -24,14 +24,14 @@ RUN yarn config set "strict-ssl" false -g
 # Install application dependencies
 RUN yarn install
 
-# Build arguments for username and password gitsource repo
-ARG USERNAME=
-ARG PASSWORD=
+# # Build arguments for username and password gitsource repo
+# ARG USERNAME=
+# ARG PASSWORD=
 
-# Git clone, copy .env, and remove unnecessary files
-RUN sudo git clone -b external/be-api-portalmember-nest https://${USERNAME}:${PASSWORD}@gitsource.myequity.id/MKO/test-folder-deploy.git \
-	&& sudo cp -r test-folder-deploy/api-portalmember-nest/.env .env \
-	&& sudo rm -rf test-folder-deploy
+# # Git clone, copy .env, and remove unnecessary files
+# RUN sudo git clone -b external/be-api-portalmember-nest https://${USERNAME}:${PASSWORD}@gitsource.myequity.id/MKO/test-folder-deploy.git \
+# 	&& sudo cp -r test-folder-deploy/api-portalmember-nest/.env .env \
+# 	&& sudo rm -rf test-folder-deploy
 
 # Copy the application source code to the container
 COPY . .
