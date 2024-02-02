@@ -95,7 +95,7 @@ export class ClaimsService {
     }
   }
 
-  async findById(id: number): Promise<Claim> {
+  async findById(id: string): Promise<Claim> {
     try {
       this.logger.log(
         'starting get detail claim through existing cached',

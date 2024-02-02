@@ -1,7 +1,8 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class ClaimUpdateRequest {
-  @IsInt()
+  @IsString()
   id: string;
 
   @IsString()
@@ -22,6 +23,10 @@ export class ClaimUpdateRequest {
   @IsString()
   @IsNotEmpty()
   plan: string;
+
+  @ApiHideProperty()
+  @IsString()
+  statusSubmit?: string;
 
   @IsInt()
   totalKlaim: number;

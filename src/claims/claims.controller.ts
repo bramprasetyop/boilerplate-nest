@@ -44,7 +44,7 @@ export class ClaimsController {
   @MapResponseSwagger(ClaimResponse, { status: 200, isArray: false })
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findDetail(@Param('id') id: number): Promise<ClaimResponse> {
+  async findDetail(@Param('id') id: string): Promise<ClaimResponse> {
     try {
       return await this.claim.findById(id);
     } catch (error) {
