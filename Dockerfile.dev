@@ -1,0 +1,40 @@
+# Use Node.js 18.18.0 with Alpine Linux as the base image
+FROM node:18.18.0-alpine
+
+# Set environment variables
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0 \
+	TZ=Asia/Jakarta
+
+RUN npm config set "strict-ssl" false -g
+
+RUN npm install -g yarn --force
+
+# Install Yarn
+RUN apk --no-cache add bash git sudo
+
+# Set the working directory within the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json to the container
+COPY package*.json ./
+COPY yarn.lock ./
+
+RUN yarn config set "strict-ssl" false -g
+
+# Install application dependencies
+RUN yarn install
+
+# Build arguments for username and password gitsource repo
+ARG USERNAME=
+ARG PASSWORD=
+
+# Git clone, copy .env, and remove unnecessary files
+RUN sudo git clone -b external/be-api-portalmember-nest https://${USERNAME}:${PASSWORD}@gitsource.myequity.id/MKO/test-folder-deploy.git \
+	&& sudo cp -r test-folder-deploy/api-portalmember-nest/.env .env \
+	&& sudo rm -rf test-folder-deploy
+
+# Copy the application source code to the container
+COPY . .
+
+# Specify the command to run the application in development mode
+CMD [ "yarn", "run", "start:dev" ]

@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  api-boilerplate-nest:
+    container_name: api-boilerplate-nest
+    # image: docker-image:tag
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: on-failure
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    networks:
+      - net-boilerplate-nest
+
+  api-boilerplate-redis:
+    image: redis:7.2.2-alpine
+    container_name: api-boilerplate-redis
+    restart: on-failure
+    ports:
+      - 6379:6379
+    networks:
+      - net-boilerplate-nest
+
+  db-boilerplate-nest:
+    image: postgres:16-alpine
+    container_name: db-boilerplate-nest
+    restart: on-failure
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user
+      POSTGRES_DB: db
+    networks:
+      - net-boilerplate-nest
+
+networks:
+  net-boilerplate-nest:
+    name: net-boilerplate-nest
+    external: false
