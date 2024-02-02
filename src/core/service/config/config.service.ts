@@ -38,5 +38,6 @@ export const checkConfigService = () =>
     'REDIS_PORT',
     'MASTER_KEY',
     'MAIL_GATEWAY',
-    'BULLMQ_PASS',
+    'AUTH_API',
+    'AUTH_API_APP_CODE',
   ]);

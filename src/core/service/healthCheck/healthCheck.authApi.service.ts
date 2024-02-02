@@ -6,7 +6,7 @@ import {
 } from '@nestjs/terminus';
 
 @Injectable()
-export class EmailGatewayHealthIndicator extends HealthIndicator {
+export class AuthAPIHealthIndicator extends HealthIndicator {
   private readonly http: HttpHealthIndicator;
 
   constructor(http: HttpHealthIndicator) {
@@ -16,10 +16,10 @@ export class EmailGatewayHealthIndicator extends HealthIndicator {
 
   async isHealthy(url: string): Promise<HealthIndicatorResult> {
     try {
-      await this.http.pingCheck('emailGateway', url);
-      return this.getStatus('emailGateway', true);
+      await this.http.pingCheck('auth API', url);
+      return this.getStatus('auth API', true);
     } catch (error) {
-      return this.getStatus('emailGateway', false, { message: error.message });
+      return this.getStatus('auth API', false, { message: error.message });
     }
   }
 }

@@ -22,4 +22,6 @@
       "@src/*": ["src/*"],
     },
   },
+  "include": ["src/**/*.ts", "src/core/database/database.config.js"],
+  "exclude": ["node_modules"],
 }

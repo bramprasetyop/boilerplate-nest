@@ -44,6 +44,26 @@ This command will build the Docker image and start the containerized application
 
 Note: Ensure that Docker is installed on your machine before running the Docker commands.
 
+## Database Migrations
+
+```bash
+npx sequelize-cli migration:generate --name your_migration_name
+```
+
+```bash
+npx sequelize-cli db:migrate
+```
+
+## Database Seeder
+
+```bash
+npx sequelize-cli seed:generate --name your_migration_name
+```
+
+```bash
+npx sequelize-cli db:seed
+```
+
 ## Additional Information
 
 Feel free to customize the application further based on your specific requirements. For more information about NestJS, refer to the [Official Documentation](https://nestjs.com/)

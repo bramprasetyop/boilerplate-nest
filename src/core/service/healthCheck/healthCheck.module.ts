@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import { DatabaseModule } from '@src/core/database/database.module';
 
+import { AuthAPIHealthIndicator } from './healthCheck.authApi.service';
 import { HealthCheckController } from './healthCheck.controller';
-import { EmailGatewayHealthIndicator } from './healthCheck.emailGateway.service';
 import { connectionCheckProviders } from './healthCheck.providers';
 import { RedisHealthIndicator } from './healthCheck.redis.service';
 import { SequelizeHealthIndicator } from './healthCheck.sequelize.service';
@@ -15,7 +15,7 @@ import { SequelizeHealthIndicator } from './healthCheck.sequelize.service';
     SequelizeHealthIndicator,
     RedisHealthIndicator,
     ...connectionCheckProviders,
-    EmailGatewayHealthIndicator,
+    AuthAPIHealthIndicator,
   ],
 })
 export class HealthCheckModule {}
