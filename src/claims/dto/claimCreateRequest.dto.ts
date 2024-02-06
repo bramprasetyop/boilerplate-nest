@@ -1,11 +1,31 @@
 import { ApiHideProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength
+} from 'class-validator';
 
 export class ClaimCreateRequest {
+  @ApiHideProperty()
+  userId?: string;
+
+  @ApiHideProperty()
+  id?: number;
+
+  @IsOptional()
+  @MaxLength(255)
+  @ApiHideProperty()
+  noKlaim?: string;
+
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
   noTertanggung: string;
+
+  @ApiHideProperty()
+  tanggalPeriksa?: Date;
 
   @IsString()
   @IsNotEmpty()
@@ -21,10 +41,18 @@ export class ClaimCreateRequest {
   @IsNotEmpty()
   plan: string;
 
-  @ApiHideProperty()
-  @IsString()
-  statusSubmit?: string;
-
   @IsInt()
   totalKlaim: number;
+
+  @IsString()
+  @IsNotEmpty()
+  statusSubmit: string;
+
+  @ApiHideProperty()
+  cutoffDate?: Date;
+
+  @IsOptional()
+  @MaxLength(255)
+  @ApiHideProperty()
+  noNota?: string;
 }

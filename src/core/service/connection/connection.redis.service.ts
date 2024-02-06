@@ -11,7 +11,7 @@ export class RedisHealthIndicator extends HealthIndicator {
     // Update connection details if needed
     this.redisClient = new Redis({
       host: process.env.REDIS_HOST || 'localhost',
-      port: Number(process.env.REDIS_PORT) || 6379,
+      port: Number(process.env.REDIS_PORT) || 6379
     });
   }
 

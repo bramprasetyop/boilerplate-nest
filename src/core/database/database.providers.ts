@@ -23,7 +23,6 @@ export const databaseProviders = [
           config = databaseConfig.development;
       }
       const sequelize = new Sequelize(config);
-
       // Environment-specific configurations
       if (process.env.NODE_ENV === 'production') {
         // Disable SQL query logging in production
@@ -34,13 +33,13 @@ export const databaseProviders = [
           max: 5,
           min: 0,
           acquire: 30000,
-          idle: 10000,
+          idle: 10000
         };
       }
       sequelize.addModels([Claim]);
       // uncomment for auto syncronize
       // await sequelize.sync();
       return sequelize;
-    },
-  },
+    }
+  }
 ];

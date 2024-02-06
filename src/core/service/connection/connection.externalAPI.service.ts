@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import {
   HealthIndicator,
   HealthIndicatorResult,
-  HttpHealthIndicator,
+  HttpHealthIndicator
 } from '@nestjs/terminus';
 
 @Injectable()
-export class AuthAPIHealthIndicator extends HealthIndicator {
+export class ExternalAPIHealthIndicator extends HealthIndicator {
   private readonly http: HttpHealthIndicator;
 
   constructor(http: HttpHealthIndicator) {
@@ -16,10 +16,10 @@ export class AuthAPIHealthIndicator extends HealthIndicator {
 
   async isHealthy(url: string): Promise<HealthIndicatorResult> {
     try {
-      await this.http.pingCheck('auth API', url);
-      return this.getStatus('auth API', true);
+      await this.http.pingCheck('external API', `${url}`);
+      return this.getStatus('external API', true);
     } catch (error) {
-      return this.getStatus('auth API', false, { message: error.message });
+      return this.getStatus('external API', false, { message: error.message });
     }
   }
 }

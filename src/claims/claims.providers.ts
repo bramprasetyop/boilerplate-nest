@@ -4,6 +4,6 @@ import { Claim } from './entity/claim.entity';
 export const claimProviders = [
   {
     provide: CLAIMS_REPOSITORY,
-    useValue: Claim,
-  },
+    useValue: Claim
+  }
 ];

@@ -1,9 +1,9 @@
 import { Claim } from '@src/claims/entity/claim.entity';
 import { CLAIMS_REPOSITORY } from '@src/core/constants';
 
-export const connectionCheckProviders = [
+export const claimProviders = [
   {
     provide: CLAIMS_REPOSITORY,
-    useValue: Claim,
-  },
+    useValue: Claim
+  }
 ];

@@ -3,22 +3,9 @@ import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { Meta, SwaggerMetaResponse } from '../dto/global.dto';
 
-export function GeneratePagination(
-  pageSize: number,
-  currentPage: number,
-  totalData: number
-): Meta {
-  return {
-    pageSize: pageSize,
-    currentPage: currentPage,
-    total: totalData,
-    totalPage: Math.ceil(totalData / pageSize),
-  };
-}
-
 export const MapResponseSwagger = <
   DataDto extends Type<unknown>,
-  Options extends { status: number; isArray: boolean },
+  Options extends { status: number; isArray: boolean }
 >(
   dataDto: DataDto,
   options: Options
@@ -35,29 +22,29 @@ export const MapResponseSwagger = <
               ? {
                   properties: {
                     status_code: {
-                      example: options.status,
+                      example: options.status
                     },
                     data: {
                       type: 'array',
-                      items: { $ref: getSchemaPath(dataDto) },
+                      items: { $ref: getSchemaPath(dataDto) }
                     },
                     meta: {
-                      $ref: getSchemaPath('Meta'),
-                    },
-                  },
+                      $ref: getSchemaPath('Meta')
+                    }
+                  }
                 }
               : {
                   properties: {
                     status_code: {
-                      example: options.status,
+                      example: options.status
                     },
                     data: {
-                      $ref: getSchemaPath(dataDto),
-                    },
-                  },
-                }),
-          },
-        ],
-      },
+                      $ref: getSchemaPath(dataDto)
+                    }
+                  }
+                })
+          }
+        ]
+      }
     })
   );

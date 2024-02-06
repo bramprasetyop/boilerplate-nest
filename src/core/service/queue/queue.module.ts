@@ -1,4 +1,3 @@
-// queue.module.ts
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 
@@ -7,25 +6,25 @@ import { Module } from '@nestjs/common';
     BullModule.forRoot({
       redis: {
         host: process.env.REDIS_HOST || 'localhost',
-        port: Number(process.env.REDIS_PORT) || 6379,
+        port: Number(process.env.REDIS_PORT) || 6379
       },
       settings: {
         lockDuration: 60000,
         stalledInterval: 30000,
         maxStalledCount: 2,
         guardInterval: 5000,
-        drainDelay: 30000,
+        drainDelay: 30000
       },
       defaultJobOptions: {
-        attempts: 5,
+        attempts: 15,
         removeOnComplete: true,
         backoff: {
           type: 'exponential',
-          delay: 5000,
-        },
-      },
-    }),
+          delay: 5000
+        }
+      }
+    })
   ],
-  exports: [BullModule],
+  exports: [BullModule]
 })
 export class QueueModule {}

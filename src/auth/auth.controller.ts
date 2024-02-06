@@ -5,18 +5,19 @@ import {
   Post,
   Request,
   Response,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
-  ApiTags,
+  ApiTags
 } from '@nestjs/swagger';
+import { API_PREFIX } from '@src/core/constants';
 import { SwaggerMetaResponse } from '@src/core/dto/global.dto';
 import { JwtAuthGuard } from '@src/core/service/guard';
 import { LoggerService } from '@src/core/service/logger/logger.service';
-import { MapResponseSwagger } from '@src/core/utils/global.util';
+import { MapResponseSwagger } from '@src/core/utils/index.utils';
 import { HttpStatusCode } from 'axios';
 
 import { AuthService } from './auth.service';
@@ -32,7 +33,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Login' })
   @MapResponseSwagger(LoginResponseDto, { status: 200, isArray: false })
-  @Post('/login')
+  @Post(`${API_PREFIX}login`)
   async login(@Request() req, @Body() body: LoginDto, @Response() res) {
     try {
       const data = await this.authService.login(body);
@@ -46,9 +47,9 @@ export class AuthController {
           {
             Request: {
               method: req.method,
-              url: req.originalUrl,
+              url: req.originalUrl
             },
-            Error: err.message,
+            Error: err.message
           },
           null,
           2
@@ -61,10 +62,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout User' })
   @ApiOkResponse({
     status: 200,
-    type: SwaggerMetaResponse,
+    type: SwaggerMetaResponse
   })
   @ApiBearerAuth()
-  @Get('/logout')
+  @Get(`${API_PREFIX}logout`)
   @UseGuards(JwtAuthGuard)
   async logout(@Request() req, @Response() res) {
     try {
@@ -78,9 +79,9 @@ export class AuthController {
             Request: {
               method: req.method,
               url: req.originalUrl,
-              body: req.body,
+              body: req.body
             },
-            Error: err.message,
+            Error: err.message
           },
           null,
           2

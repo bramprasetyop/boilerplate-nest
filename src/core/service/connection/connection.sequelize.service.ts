@@ -8,10 +8,10 @@ export class SequelizeHealthIndicator extends HealthIndicator {
   sequelize: any;
   constructor(
     @Inject(CLAIMS_REPOSITORY)
-    private readonly claimRepository: typeof Claim
+    private readonly companyDocumentCutOffRepository: typeof Claim
   ) {
     super();
-    this.sequelize = this.claimRepository.sequelize;
+    this.sequelize = this.companyDocumentCutOffRepository.sequelize;
   }
 
   async isHealthy(): Promise<HealthIndicatorResult> {

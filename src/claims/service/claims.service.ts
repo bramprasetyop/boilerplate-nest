@@ -15,6 +15,7 @@ dotenv.config();
 
 @Injectable()
 export class ClaimsService {
+  private readonly host: string;
   sequelize: any;
   constructor(
     @Inject(CLAIMS_REPOSITORY)
@@ -26,8 +27,11 @@ export class ClaimsService {
   ) {
     this.sequelize = this.claimRepository.sequelize;
   }
-
-  async findAll(page: number = 1, perPage: number = 10): Promise<PagingClaim> {
+  async findAll(
+    userId: string,
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<PagingClaim> {
     try {
       const currentPage = page && page >= 1 ? page : 1;
 
@@ -41,7 +45,7 @@ export class ClaimsService {
 
       // get claims from redis
       const cachedData = await this.cacheService.get<any>(
-        `claimData${currentPage}${perPage}`
+        `claimData${userId}${currentPage}${perPage}`
       );
 
       if (cachedData) {
@@ -57,7 +61,7 @@ export class ClaimsService {
       const response = await this.claimRepository.findAndCountAll({
         limit: perPage,
         offset,
-        order: [['updatedAt', 'DESC']],
+        order: [['updatedAt', 'DESC']]
       });
 
       this.logger.log(
@@ -65,20 +69,25 @@ export class ClaimsService {
         JSON.stringify(response, null, 2)
       );
 
+      const modifiedResponse = {
+        ...response,
+        rows: response.rows
+      };
+
       const result = {
-        status_code: response.rows ? 200 : 204,
-        data: response.rows,
+        status_code: modifiedResponse.rows ? 200 : 204,
+        data: modifiedResponse.rows,
         meta: {
-          total: response.count,
+          total: modifiedResponse.count,
           pageSize: perPage,
           currentPage,
-          totalPage: Math.ceil(response.count / perPage),
-        },
+          totalPage: Math.ceil(modifiedResponse.count / perPage)
+        }
       };
 
       // save claims to redis
       this.cacheStoreService.set(
-        `claimData${currentPage}${perPage}`,
+        `claimData${userId}${currentPage}${perPage}`,
         result,
         // save to redis for 4 hours
         { ttl: REDIS_CACHE_TTL / 6 }
@@ -95,14 +104,16 @@ export class ClaimsService {
     }
   }
 
-  async findById(id: string): Promise<Claim> {
+  async findById(userId: string, id: number): Promise<Claim> {
     try {
       this.logger.log(
         'starting get detail claim through existing cached',
         '===running==='
       );
       // get claim detail from redis
-      const cachedData = await this.cacheService.get<Claim>(`claimData${id}`);
+      const cachedData = await this.cacheService.get<Claim>(
+        `claimData${userId}${id}`
+      );
 
       if (cachedData) {
         this.logger.log(
@@ -116,8 +127,8 @@ export class ClaimsService {
 
       const response = await this.claimRepository.findOne({
         where: {
-          id,
-        },
+          id
+        }
       });
 
       if (!response) {
@@ -137,9 +148,9 @@ export class ClaimsService {
       );
 
       // save claim detail to redis
-      this.cacheStoreService.set(`claimData${id}`, response, {
+      this.cacheStoreService.set(`claimData${userId}${id}`, response, {
         // save to redis for 4 hours
-        ttl: REDIS_CACHE_TTL / 6,
+        ttl: REDIS_CACHE_TTL / 6
       });
 
       return response;
@@ -166,7 +177,7 @@ export class ClaimsService {
       return {
         status_code: 201,
         status_description: 'Create claim success!',
-        data: createClaimResponse,
+        data: createClaimResponse
       };
     } catch (error) {
       this.logger.error(
@@ -199,6 +210,7 @@ export class ClaimsService {
       const job = await this.claimQueue.add('updateClaimQueue', dto);
 
       const response = await job.finished();
+      console.log(response, 'response');
 
       this.logger.log(
         'success update claim to db',
@@ -208,7 +220,7 @@ export class ClaimsService {
       return {
         status_code: 201,
         status_description: 'Update claim success!',
-        data: response,
+        data: response
       };
     } catch (error) {
       this.logger.error(
@@ -220,27 +232,29 @@ export class ClaimsService {
     }
   }
 
-  async delete(id: string): Promise<any> {
+  async delete(userId: string, id: string): Promise<any> {
     try {
       this.logger.log('starting delete claim', '===running===');
 
       const response = await this.claimRepository.destroy({
-        where: { id },
+        where: { id }
       });
 
       if (!response) {
         this.logger.error(
-          '===== Error find claim by id on delete =====',
+          '===== Error claim by id =====',
           `Error: `,
-          'ID claim tidak ditemukan.'
+          'ID Claim tidak ditemukan.'
         );
         throw new NotFoundException(
-          'ID claim tidak ditemukan, Mohon periksa kembali.'
+          'ID Claim tidak ditemukan, Mohon periksa kembali.'
         );
       }
 
       const keys = await this.cacheService.store.keys();
-      const keysToDelete = keys.filter((key) => key.startsWith('claimData'));
+      const keysToDelete = keys.filter(key =>
+        key.startsWith(`claimData${userId}`)
+      );
 
       for (const keyToDelete of keysToDelete) {
         await this.cacheService.del(keyToDelete);
@@ -253,7 +267,7 @@ export class ClaimsService {
 
       return {
         status_code: 201,
-        status_description: 'Delete claim success!',
+        status_description: 'Berhasil menghapus Claim.'
       };
     } catch (error) {
       this.logger.error(

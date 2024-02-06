@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller, // UseGuards,
+  Controller,
   Delete,
   Get,
   InternalServerErrorException,
@@ -8,67 +8,43 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-// import { JwtAuthGuard } from '@src/core/service/guard';
-import { MapResponseSwagger } from '@src/core/utils/global.util';
+import { API_PREFIX } from '@src/core/constants';
+import { JwtAuthGuard } from '@src/core/service/guard';
+import { MapResponseSwagger } from '@src/core/utils/index.utils';
 
 import {
   ClaimCreateRequest,
   ClaimFindAllResponse,
   ClaimRequestList,
   ClaimResponse,
-  ClaimUpdateRequest,
+  ClaimUpdateRequest
 } from './dto';
 import { ClaimsService } from './service/claims.service';
 
-@Controller('claims')
+@Controller()
 @ApiTags('Claims')
 @ApiBearerAuth()
 export class ClaimsController {
   constructor(private claim: ClaimsService) {}
 
   @MapResponseSwagger(ClaimResponse, { status: 200, isArray: true })
-  // @UseGuards(JwtAuthGuard)
-  @Get()
+  @UseGuards(JwtAuthGuard)
+  @Get(`${API_PREFIX}claims`)
   async findAll(
-    @Query() query: ClaimRequestList
+    @Query() query: ClaimRequestList,
+    @Req() request
   ): Promise<ClaimFindAllResponse> {
     try {
-      return await this.claim.findAll(+query?.page, +query?.perPage);
-    } catch (error) {
-      throw new InternalServerErrorException(error?.message);
-    }
-  }
-
-  @MapResponseSwagger(ClaimResponse, { status: 200, isArray: false })
-  // @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findDetail(@Param('id') id: string): Promise<ClaimResponse> {
-    try {
-      return await this.claim.findById(id);
-    } catch (error) {
-      throw new InternalServerErrorException(error?.message);
-    }
-  }
-
-  @MapResponseSwagger(ClaimCreateRequest, { status: 200, isArray: false })
-  // @UseGuards(JwtAuthGuard)
-  @Post()
-  async create(@Body() body: ClaimCreateRequest): Promise<any> {
-    try {
-      return await this.claim.create(body);
-    } catch (error) {
-      throw new InternalServerErrorException(error?.message);
-    }
-  }
-
-  @MapResponseSwagger(ClaimUpdateRequest, { status: 200, isArray: false })
-  // @UseGuards(JwtAuthGuard)
-  @Put()
-  async update(@Body() body: ClaimUpdateRequest): Promise<any> {
-    try {
-      return await this.claim.update(body);
+      const { user } = request;
+      return await this.claim.findAll(
+        user?.id_user,
+        +query?.page,
+        +query?.perPage
+      );
     } catch (error) {
       throw new InternalServerErrorException(error?.message);
     }
@@ -77,16 +53,66 @@ export class ClaimsController {
   @ApiOkResponse({
     schema: {
       example: {
-        status_code: 200,
-        status_description: 'Berhasil menghapus prosedur.',
-      },
-    },
+        statusCode: 200,
+        message: 'sukses',
+        error: ''
+      }
+    }
   })
-  // @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  async delete(@Param('id') id: string): Promise<any> {
+  @MapResponseSwagger(ClaimResponse, { status: 200, isArray: false })
+  @UseGuards(JwtAuthGuard)
+  @Get(`${API_PREFIX}claims/:id`)
+  async findDetail(
+    @Param('id') id: number,
+    @Req() request
+  ): Promise<ClaimResponse> {
     try {
-      return await this.claim.delete(id);
+      const { user } = request;
+      return await this.claim.findById(user?.id_user, id);
+    } catch (error) {
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @MapResponseSwagger(ClaimCreateRequest, { status: 200, isArray: false })
+  @UseGuards(JwtAuthGuard)
+  @Post(`${API_PREFIX}claims`)
+  async create(@Body() body: ClaimCreateRequest, @Req() request): Promise<any> {
+    try {
+      const { user } = request;
+      const jobData = {
+        ...body,
+        ...{ userId: user?.id_user }
+      };
+      return await this.claim.create(jobData);
+    } catch (error) {
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @MapResponseSwagger(ClaimUpdateRequest, { status: 200, isArray: false })
+  @UseGuards(JwtAuthGuard)
+  @Put(`${API_PREFIX}claims`)
+  async update(@Body() body: ClaimUpdateRequest, @Req() request): Promise<any> {
+    try {
+      const { user } = request;
+      const jobData = {
+        ...body,
+        ...{ userId: user?.id_user }
+      };
+
+      return await this.claim.update(jobData);
+    } catch (error) {
+      throw new InternalServerErrorException(error?.message);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(`${API_PREFIX}claims/:id`)
+  async delete(@Param('id') id: string, @Req() request): Promise<any> {
+    try {
+      const { user } = request;
+      return await this.claim.delete(user?.id_user, id);
     } catch (error) {
       throw new InternalServerErrorException(error?.message);
     }

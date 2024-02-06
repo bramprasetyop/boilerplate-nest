@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Injectable, Logger, Scope } from '@nestjs/common';
 import * as fs from 'fs';
 import * as moment from 'moment';
@@ -55,12 +54,12 @@ export class LoggerService extends Logger {
       dirname: dateDirPath,
       filename: path.join(dateDirPath, 'error.log'),
       format: format.combine(
-        format.label({ label: 'PORTAL MEMBER' }),
+        format.label({ label: 'MY EBENFIT' }),
         format.timestamp(),
         customFormat
       ),
       zippedArchive: false,
-      maxFiles: '30d',
+      maxFiles: '30d'
     });
 
     const infoTransport = new transports.DailyRotateFile({
@@ -68,12 +67,12 @@ export class LoggerService extends Logger {
       dirname: dateDirPath,
       filename: path.join(dateDirPath, 'info.log'),
       format: format.combine(
-        format.label({ label: 'PORTAL MEMBER' }),
+        format.label({ label: 'MY EBENFIT' }),
         format.timestamp(),
         customFormat
       ),
       zippedArchive: false,
-      maxFiles: '30d',
+      maxFiles: '30d'
     });
 
     this.logger.clear();
@@ -87,7 +86,7 @@ export class LoggerService extends Logger {
           format.printf(({ timestamp, level, message }) => {
             return `${timestamp} ${level}: ${message}`;
           })
-        ),
+        )
       })
     );
   }
@@ -102,11 +101,11 @@ export class LoggerService extends Logger {
       format: format.combine(
         format.timestamp({
           format: () =>
-            moment().utcOffset('+07:00').format('YYYY-MM-DD HH:mm:ss.SSS Z'),
+            moment().utcOffset('+07:00').format('YYYY-MM-DD HH:mm:ss.SSS Z')
         }),
         format.json()
       ),
-      transports: [],
+      transports: []
     });
 
     this.updateLogger();

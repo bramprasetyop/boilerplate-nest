@@ -9,10 +9,14 @@ export class ResponseMiddleware implements NestMiddleware {
     res.json = (body: any) => {
       if (res.statusCode < 400) {
         body = {
-          status_code: res.statusCode,
+          status_code: body.status_code ?? 200,
           status_description: body.status_description ?? 'Permintaan berhasil',
-          data: body.data ?? body,
-          ...(body.meta ? { meta: body.meta } : {}),
+          data: body.data
+            ? body.data
+            : body?.status_code || body?.status_description
+              ? null
+              : body,
+          ...(body.meta ? { meta: body.meta } : {})
         };
       }
 

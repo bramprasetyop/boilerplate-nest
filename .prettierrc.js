@@ -1,5 +1,6 @@
 module.exports = {
-  trailingComma: 'es5',
+  arrowParens: 'avoid',
+  trailingComma: 'none',
   tabWidth: 2,
   semi: true,
   singleQuote: true,
@@ -8,5 +9,5 @@ module.exports = {
   importOrderParserPlugins: ['typescript', 'decorators-legacy'],
   importOrder: ['^@/(.*)$', '^[./]'],
   importOrderSeparation: true,
-  importOrderSortSpecifiers: true,
+  importOrderSortSpecifiers: true
 };

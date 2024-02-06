@@ -3,7 +3,7 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  HttpStatus,
+  HttpStatus
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -17,7 +17,7 @@ export class ExceptionMiddleware implements ExceptionFilter {
 
     response.status(errorInstanceStatus).json({
       status_code: errorInstanceStatus,
-      status_description: exception.getResponse()['message'],
+      status_description: exception.getResponse()['message']
     });
   }
 }

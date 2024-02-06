@@ -1,20 +1,22 @@
-import { HttpModule } from '@nestjs/axios';
 import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import {
   Inject,
   MiddlewareConsumer,
   Module,
-  RequestMethod,
+  RequestMethod
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import * as redisStore from 'cache-manager-redis-store';
+import { join } from 'path';
 
+import { HomeController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { ClaimsModule } from './claims/claims.module';
 import { DatabaseModule } from './core/database/database.module';
 import { ResponseMiddleware } from './core/middleware';
-import { HealthCheckModule } from './core/service/healthCheck/healthCheck.module';
+import { ConnectionModule } from './core/service/connection/connection.module';
 import { LoggerService } from './core/service/logger/logger.service';
 import { CronModule } from './cron/cron.module';
 
@@ -26,25 +28,26 @@ import { CronModule } from './cron/cron.module';
       isGlobal: true,
       store: redisStore,
       host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
+      port: process.env.REDIS_PORT
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..')
     }),
     DatabaseModule,
     AuthModule,
-    CronModule,
-    HealthCheckModule,
     ClaimsModule,
-    HttpModule.register({
-      timeout: 150000,
-    }),
+    ConnectionModule,
+    CronModule
   ],
-  providers: [LoggerService],
+  controllers: [HomeController],
+  providers: [LoggerService]
 })
 export class AppModule {
   constructor(@Inject(CACHE_MANAGER) cacheManager) {
     try {
       const client = cacheManager.store.getClient();
 
-      client.on('error', (error) => {
+      client.on('error', error => {
         console.info(`Redis error: ${error}`);
       });
 

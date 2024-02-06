@@ -1,6 +1,5 @@
 import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
-import { DataWithStatusRes } from '@src/core/dto/global.dto';
 import { LoggerService } from '@src/core/service/logger/logger.service';
 import axios from 'axios';
 
@@ -21,15 +20,15 @@ export class AuthService {
     const externalUrl = `${process.env.AUTH_API}auth/login`;
 
     try {
-      const response = await axios.post(externalUrl, {
+      const { data } = await axios.post(externalUrl, {
         username,
         password,
-        appcode: process.env.AUTH_API_APP_CODE,
+        appcode: process.env.AUTH_API_APP_CODE
       });
 
       return {
-        token: response.data.token,
-        token_expired: +response.data.token_expiration,
+        token: data?.jwt?.token,
+        token_expired: data?.jwt?.expiresIn
       };
     } catch (error) {
       this.logger.error('External request failed', 'error', error);
@@ -37,10 +36,10 @@ export class AuthService {
     }
   }
 
-  async logout(): Promise<DataWithStatusRes<object>> {
+  async logout(): Promise<any> {
     return {
       status_description: 'Logout berhasil!',
-      data: {},
+      data: {}
     };
   }
 }

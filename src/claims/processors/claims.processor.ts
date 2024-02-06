@@ -5,22 +5,85 @@ import { CLAIMS_REPOSITORY } from '@src/core/constants';
 import { LoggerService } from '@src/core/service/logger/logger.service';
 import { Job } from 'bull';
 import { Cache } from 'cache-manager';
+import * as moment from 'moment';
+import { Op } from 'sequelize';
+import * as Client from 'ssh2-sftp-client';
 
 import { ClaimCreateRequest, ClaimUpdateRequest } from '../dto';
 import { Claim } from '../entity/claim.entity';
 
 @Processor('claimQueue')
 export class ClaimProcessor {
+  private readonly host: string;
+  private readonly port: number;
+  private readonly username: string;
+  private readonly password: string;
+
   constructor(
     @Inject(CLAIMS_REPOSITORY)
     private readonly claimRepository: typeof Claim,
     private readonly logger: LoggerService,
     @Inject(CACHE_MANAGER) private readonly cacheService: Cache
-  ) {}
+  ) {
+    this.host = process.env.SFTP_HOST;
+
+    this.port = parseInt(process.env.SFTP_PORT || '22', 10);
+    this.username = process.env.SFTP_USERNAME;
+    this.password = process.env.SFTP_PASSWORD;
+  }
+
+  async sftpClient() {
+    const client = new Client();
+
+    const credentials = {
+      host: this.host,
+      port: this.port,
+      username: this.username,
+      password: this.password
+    };
+
+    await client.connect(credentials).catch(error => {
+      this.logger.error(
+        'SFTP client error connection',
+        'Error',
+        JSON.stringify(error, null, 2)
+      );
+
+      throw error;
+    });
+
+    return client;
+  }
+
+  async generateNoKlaim() {
+    const year = moment().format('YYYY');
+    let noKlaim = `B${year}.00001`;
+
+    function incrementNoKlaim(str: string) {
+      const number = parseInt(str, 10) + 1;
+      return String(number).padStart(str.length, '0');
+    }
+
+    const latestNoKlaim = await this.claimRepository.findOne({
+      where: {
+        noKlaim: { [Op.like]: `B${year}.%` }
+      },
+      paranoid: false,
+      order: [['created_at', 'DESC']]
+    });
+
+    if (latestNoKlaim) {
+      const [, lastSeq] = latestNoKlaim.noKlaim.split('.');
+      const newSeq = await incrementNoKlaim(lastSeq);
+      noKlaim = `B${year}.${newSeq}`;
+    }
+    return noKlaim;
+  }
 
   @Process('addClaimQueue')
   async processAddClaim(job: Job<ClaimCreateRequest>) {
     const claimData = job.data;
+    const { userId } = claimData;
 
     const t = await this.claimRepository.sequelize.transaction();
 
@@ -28,12 +91,14 @@ export class ClaimProcessor {
       this.logger.log('Starting add claim in bull processor', '===running===');
 
       const createdClaim = await this.claimRepository.create<Claim>(claimData, {
-        transaction: t,
+        transaction: t
       });
 
       await t.commit();
       const keys = await this.cacheService.store.keys();
-      const keysToDelete = keys.filter((key) => key.startsWith(`claimData`));
+      const keysToDelete = keys.filter(key =>
+        key.startsWith(`claimData${userId}`)
+      );
 
       for (const keyToDelete of keysToDelete) {
         await this.cacheService.del(keyToDelete);
@@ -58,7 +123,7 @@ export class ClaimProcessor {
   @Process('updateClaimQueue')
   async processUpdateClaim(job: Job<ClaimUpdateRequest>) {
     const claimData = job.data;
-    const { id } = claimData;
+    const { id, statusSubmit, userId } = claimData;
 
     const t = await this.claimRepository.sequelize.transaction();
 
@@ -68,21 +133,75 @@ export class ClaimProcessor {
         '===running==='
       );
 
+      const now = moment();
       const findClaim = await Claim.findByPk(id);
 
+      if (statusSubmit === '1') {
+        Object.assign(claimData, {
+          statusSubmit: statusSubmit,
+          isResubmit: true,
+          submitCounter: findClaim?.submitCounter + 1
+        });
+
+        if (!findClaim?.noKlaim) {
+          let resultNoKlaim = await this.generateNoKlaim();
+          const findExistingClaim = await Claim.findOne({
+            where: { noKlaim: resultNoKlaim }
+          });
+
+          if (findExistingClaim) {
+            this.logger.log(
+              'Existing no claim in bull processor found',
+              `${findExistingClaim?.noKlaim}`
+            );
+
+            resultNoKlaim = await this.generateNoKlaim();
+            this.logger.log(
+              'Reregenerate no claim in bull processor success',
+              `${resultNoKlaim}`
+            );
+          }
+          Object.assign(claimData, {
+            noKlaim: resultNoKlaim,
+            updatedAt: now.toISOString()
+          });
+        }
+      }
+
       const updatedClaim = await findClaim.update(claimData, {
-        transaction: t,
+        transaction: t
       });
+
+      if (statusSubmit === '0') {
+        await t.commit();
+        const keys = await this.cacheService.store.keys();
+        const keysToDelete = keys.filter(key =>
+          key.startsWith(`claimData${userId}`)
+        );
+
+        for (const keyToDelete of keysToDelete) {
+          await this.cacheService.del(keyToDelete);
+        }
+
+        this.logger.log(
+          'Update claim in bull processor done for status 0',
+          JSON.stringify(updatedClaim, null, 2)
+        );
+        return updatedClaim;
+      }
+
       await t.commit();
       const keys = await this.cacheService.store.keys();
-      const keysToDelete = keys.filter((key) => key.startsWith('claimData'));
+      const keysToDelete = keys.filter(key =>
+        key.startsWith(`claimData${userId}`)
+      );
 
       for (const keyToDelete of keysToDelete) {
         await this.cacheService.del(keyToDelete);
       }
 
       this.logger.log(
-        'Update claim in bull processor done for status 0',
+        'Update claim in bull processor done',
         JSON.stringify(updatedClaim, null, 2)
       );
       return updatedClaim;

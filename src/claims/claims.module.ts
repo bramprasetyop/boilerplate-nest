@@ -12,13 +12,21 @@ import { ClaimsService } from './service/claims.service';
 @Module({
   imports: [
     QueueModule,
-    BullModule.registerQueue({
-      name: 'claimQueue',
-    }),
-    DatabaseModule,
+    BullModule.registerQueue(
+      {
+        name: 'claimQueue'
+      },
+      {
+        name: 'portalMemberClaimQueue'
+      },
+      {
+        name: 'claimCronQueue'
+      }
+    ),
+    DatabaseModule
   ],
   providers: [ClaimsService, ...claimProviders, LoggerService, ClaimProcessor],
   controllers: [ClaimsController],
-  exports: [ClaimsService, LoggerService],
+  exports: [ClaimsService, LoggerService]
 })
 export class ClaimsModule {}

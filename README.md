@@ -14,7 +14,7 @@ yarn install
 
 ## ENV File
 
-For adding the environment file with dependencies, please refer to the following repository: [Credential Repo](https://gitsource.myequity.id/MKO/test-folder-deploy/tree/external/be-api-boilerplate-nest/api-boilerplate-nest)
+For adding the environment file with dependencies, please copy from `.env.sample`
 
 ## Run Locally
 
